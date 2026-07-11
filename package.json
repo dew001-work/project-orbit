@@ -1,0 +1,30 @@
+{
+  "name": "project-orbit",
+  "version": "0.3.0",
+  "private": true,
+  "type": "module",
+  "description": "Production-ready AI browser extension foundation for Project Orbit.",
+  "scripts": {
+    "dev": "vite --host 0.0.0.0",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview --host 0.0.0.0",
+    "lint": "eslint .",
+    "format": "prettier --check .",
+    "format:write": "prettier --write ."
+  },
+  "dependencies": {
+    "vite": "latest",
+    "typescript": "latest",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "lucide-react": "latest",
+    "@google/genai": "latest"
+  },
+  "devDependencies": {
+    "autoprefixer": "latest",
+    "eslint": "^10.0.0",
+    "postcss": "latest",
+    "prettier": "latest",
+    "tailwindcss": "^3.4.0"
+  }
+}
