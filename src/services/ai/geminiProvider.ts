@@ -1,5 +1,11 @@
 import { GoogleGenAI } from '@google/genai';
-import type { AiProvider, SummaryRequest, SummaryResult } from './types';
+import type {
+  AiProvider,
+  SummaryRequest,
+  SummaryResult,
+  AskPageRequest,
+  AskPageResult
+} from './types';
 
 export const GEMINI_SUMMARY_MODEL = 'gemini-2.5-flash';
 
