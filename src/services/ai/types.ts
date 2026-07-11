@@ -13,6 +13,20 @@ export interface SummaryResult {
   notice?: string;
 }
 
+export interface AskPageRequest {
+  title: string;
+  url: string;
+  content: string;
+  question: string;
+}
+
+export interface AskPageResult {
+  provider: 'gemini';
+  model: string;
+  answer: string;
+}
+
 export interface AiProvider {
   summarizePage(request: SummaryRequest): Promise<SummaryResult>;
+  askPage(request: AskPageRequest): Promise<AskPageResult>;
 }
