@@ -64,12 +64,20 @@ const {
             label={action.label}
             onClick={() => {
               if (action.label === 'Summarize') {
-                setMessage('Generating a page summary...');
-                generateSummary();
-                return;
-              }
+  setShowAskPanel(false);
+  setMessage('Generating a page summary...');
+  generateSummary();
+  return;
+}
 
-              setMessage(action.message);
+if (action.label === 'Ask Page') {
+  setShowAskPanel(true);
+  setMessage('Ask anything about this page.');
+  return;
+}
+
+setShowAskPanel(false);
+setMessage(action.message);
             }}
           />
         ))}
