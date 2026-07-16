@@ -33,6 +33,12 @@ const actions = [
 
 export function Popup() {
   const { data, error, isLoading } = useCurrentTab();
+  const {
+  error: summaryError,
+  generateSummary,
+  result,
+  status
+} = usePageSummary(data);
 const {
   error: askError,
   ask,
@@ -41,6 +47,8 @@ const {
 } = useAskPage(data);
   const [message, setMessage] = useState('Choose an action to continue.');
   const [copied, setCopied] = useState(false);
+  const [question, setQuestion] = useState('');
+const [showAskPanel, setShowAskPanel] = useState(false);
 
   return (
     <main className="min-h-[540px] bg-gradient-to-br from-slate-50 via-white to-blue-50 p-5">
