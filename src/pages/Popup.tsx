@@ -6,6 +6,7 @@ import { StatusMessage } from '../components/StatusMessage';
 import { SummaryResultCard } from '../components/SummaryResultCard';
 import { useCurrentTab } from '../hooks/useCurrentTab';
 import { usePageSummary } from '../hooks/usePageSummary';
+import { useAskPage } from '../hooks/useAskPage';
 
 const actions = [
   {
@@ -32,7 +33,12 @@ const actions = [
 
 export function Popup() {
   const { data, error, isLoading } = useCurrentTab();
-  const { error: summaryError, generateSummary, result, status } = usePageSummary(data);
+const {
+  error: askError,
+  ask,
+  result: askResult,
+  status: askStatus
+} = useAskPage(data);
   const [message, setMessage] = useState('Choose an action to continue.');
   const [copied, setCopied] = useState(false);
 
