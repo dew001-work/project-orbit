@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { extractVisiblePageContent } from '../features/page/extractPageContent';
 import { askPage } from '../services/ai/aiService';
 import type { AskPageResult } from '../services/ai/types';
+import type { ExtractedPageContent } from '../features/page/extractPageContent';
 import type { PageContext } from '../types/tabs';
 
 type AskPageStatus = 'idle' | 'loading' | 'success' | 'error';
@@ -12,7 +12,10 @@ interface AskPageState {
   status: AskPageStatus;
 }
 
-export function useAskPage(page: PageContext | null) {
+export function useAskPage(
+  page: PageContext | null,
+  getContent: (page: PageContext) => Promise<ExtractedPageContent>
+) {
   const [state, setState] = useState<AskPageState>({
     error: null,
     result: null,
@@ -45,7 +48,7 @@ export function useAskPage(page: PageContext | null) {
     });
 
     try {
-      const extractedPage = await extractVisiblePageContent(page);
+      const extractedPage = await getContent(page);
 
       const result = await askPage({
         title: extractedPage.title,

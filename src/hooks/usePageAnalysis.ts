@@ -1,31 +1,31 @@
 import { useState } from 'react';
-import { summarizePage } from '../services/ai/aiService';
-import type { SummaryResult } from '../services/ai/types';
+import { analyzePage } from '../services/ai/aiService';
+import type { AnalysisResult } from '../services/ai/types';
 import type { ExtractedPageContent } from '../features/page/extractPageContent';
 import type { PageContext } from '../types/tabs';
 
-type SummaryStatus = 'idle' | 'loading' | 'success' | 'error';
+type AnalysisStatus = 'idle' | 'loading' | 'success' | 'error';
 
-interface PageSummaryState {
+interface PageAnalysisState {
   error: string | null;
-  result: SummaryResult | null;
-  status: SummaryStatus;
+  result: AnalysisResult | null;
+  status: AnalysisStatus;
 }
 
-export function usePageSummary(
+export function usePageAnalysis(
   page: PageContext | null,
   getContent: (page: PageContext) => Promise<ExtractedPageContent>
 ) {
-  const [state, setState] = useState<PageSummaryState>({
+  const [state, setState] = useState<PageAnalysisState>({
     error: null,
     result: null,
     status: 'idle'
   });
 
-  async function generateSummary() {
+  async function generateAnalysis() {
     if (!page) {
       setState({
-        error: 'Open a webpage before requesting a summary.',
+        error: 'Open a webpage before requesting an analysis.',
         result: null,
         status: 'error'
       });
@@ -36,7 +36,7 @@ export function usePageSummary(
 
     try {
       const extractedPage = await getContent(page);
-      const result = await summarizePage({
+      const result = await analyzePage({
         title: extractedPage.title,
         url: extractedPage.url,
         content: extractedPage.content
@@ -45,7 +45,7 @@ export function usePageSummary(
       setState({ error: null, result, status: 'success' });
     } catch (error) {
       setState({
-        error: error instanceof Error ? error.message : 'Unable to summarize this page.',
+        error: error instanceof Error ? error.message : 'Unable to analyze this page.',
         result: null,
         status: 'error'
       });
@@ -54,6 +54,6 @@ export function usePageSummary(
 
   return {
     ...state,
-    generateSummary
+    generateAnalysis
   };
 }
