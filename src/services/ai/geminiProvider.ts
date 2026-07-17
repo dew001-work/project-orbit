@@ -23,8 +23,7 @@ export class GeminiAiProvider implements AiProvider {
   }
 
   async summarizePage(request: SummaryRequest): Promise<SummaryResult> {
-    const client = this.client;
-    const response = await client.models.generateContent({
+    const response = await this.client.models.generateContent({
       model: GEMINI_SUMMARY_MODEL,
       contents: buildSummaryPrompt(request)
     });
@@ -34,9 +33,50 @@ export class GeminiAiProvider implements AiProvider {
     return {
       provider: 'gemini',
       model: GEMINI_SUMMARY_MODEL,
-      summary: parsed.summary || 'Gemini returned an empty summary for this page.',
-      keyPoints: normalizeList(parsed.keyPoints, 5, 'No additional key point was returned.'),
-      actionItems: normalizeList(parsed.actionItems, 1, 'No explicit action items were identified.')
+      summary:
+        parsed.summary || 'Gemini returned an empty summary for this page.',
+      keyPoints: normalizeList(
+        parsed.keyPoints,
+        5,
+        'No additional key point was returned.'
+      ),
+      actionItems: normalizeList(
+        parsed.actionItems,
+        1,
+        'No explicit action items were identified.'
+      )
+    };
+  }
+
+  async askPage(request: AskPageRequest): Promise<AskPageResult> {
+    const response = await this.client.models.generateContent({
+      model: GEMINI_SUMMARY_MODEL,
+      contents: `
+You are Project Orbit.
+
+Answer ONLY using the webpage content below.
+
+If the answer cannot be found in the page content, say:
+"I couldn't find that information on this page."
+
+Question:
+${request.question}
+
+Page Title:
+${request.title}
+
+Page URL:
+${request.url}
+
+Page Content:
+${request.content}
+`
+    });
+
+    return {
+      provider: 'gemini',
+      model: GEMINI_SUMMARY_MODEL,
+      answer: response.text ?? 'No answer generated.'
     };
   }
 }
