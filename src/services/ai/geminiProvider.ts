@@ -4,8 +4,20 @@ import type {
   SummaryRequest,
   SummaryResult,
   AskPageRequest,
-  AskPageResult
+  AskPageResult,
+  RewriteRequest,
+  RewriteResult,
+  RewriteTone,
+  AnalysisRequest,
+  AnalysisResult
 } from './types';
+
+interface GeminiAnalysisResponse {
+  contentType?: string;
+  tone?: string;
+  keyTopics?: string[];
+  qualityNotes?: string[];
+}
 
 export const GEMINI_SUMMARY_MODEL = 'gemini-2.5-flash';
 
@@ -77,6 +89,94 @@ ${request.content}
       provider: 'gemini',
       model: GEMINI_SUMMARY_MODEL,
       answer: response.text ?? 'No answer generated.'
+    };
+  }
+
+  async rewriteSelection(request: RewriteRequest): Promise<RewriteResult> {
+    const response = await this.client.models.generateContent({
+      model: GEMINI_SUMMARY_MODEL,
+      contents: buildRewritePrompt(request)
+    });
+
+    return {
+      provider: 'gemini',
+      model: GEMINI_SUMMARY_MODEL,
+      rewritten: response.text?.trim() || 'Gemini returned an empty rewrite.'
+    };
+  }
+
+  async analyzePage(request: AnalysisRequest): Promise<AnalysisResult> {
+    const response = await this.client.models.generateContent({
+      model: GEMINI_SUMMARY_MODEL,
+      contents: buildAnalysisPrompt(request)
+    });
+
+    const parsed = parseGeminiAnalysis(response.text ?? '');
+
+    return {
+      provider: 'gemini',
+      model: GEMINI_SUMMARY_MODEL,
+      contentType: parsed.contentType || 'Unknown',
+      tone: parsed.tone || 'Not determined',
+      keyTopics: normalizeList(parsed.keyTopics, 3, 'No additional topic was identified.'),
+      qualityNotes: normalizeList(parsed.qualityNotes, 1, 'No notable quality issues were identified.')
+    };
+  }
+}
+
+function buildRewritePrompt(request: RewriteRequest): string {
+  const toneInstructions: Record<RewriteTone, string> = {
+    professional: 'Rewrite it in a professional, polished tone suitable for business communication.',
+    casual: 'Rewrite it in a relaxed, casual, conversational tone.',
+    concise: 'Rewrite it to be as short and concise as possible while keeping the core meaning.',
+    simple: 'Rewrite it using simple, plain language that is easy for anyone to understand.'
+  };
+
+  return [
+    'You are Project Orbit, a browser copilot that rewrites selected text.',
+    toneInstructions[request.tone],
+    'Return ONLY the rewritten text, with no preamble, no quotes, and no explanation.',
+    `Original text:\n${request.text}`
+  ].join('\n\n');
+}
+
+function buildAnalysisPrompt(request: AnalysisRequest): string {
+  return [
+    'You are Project Orbit, a critical browser copilot analyzing a webpage.',
+    'Analyze the visible webpage content for the user.',
+    'Return ONLY valid JSON with this exact shape:',
+    '{"contentType":"string","tone":"string","keyTopics":["topic 1","topic 2","topic 3"],"qualityNotes":["note"]}',
+    'Rules:',
+    '- contentType should classify the page (e.g. article, product page, documentation, landing page, forum, listing).',
+    '- tone should describe the overall tone (e.g. neutral, promotional, urgent, technical, persuasive).',
+    '- Return 3 to 5 keyTopics covering the main subjects or entities on the page.',
+    '- qualityNotes should flag notable structural or credibility issues, such as missing sources, thin content, clickbait or urgency language, unclear authorship, or excessive promotional language. If none stand out, return an empty array.',
+    '- Do not include markdown fences or commentary outside JSON.',
+    `Title: ${request.title}`,
+    `URL: ${request.url}`,
+    `Visible content:\n${request.content}`
+  ].join('\n\n');
+}
+
+function parseGeminiAnalysis(text: string): GeminiAnalysisResponse {
+  const jsonText = extractJsonObject(text);
+
+  try {
+    const parsed = JSON.parse(jsonText) as GeminiAnalysisResponse;
+    return {
+      contentType: typeof parsed.contentType === 'string' ? parsed.contentType : undefined,
+      tone: typeof parsed.tone === 'string' ? parsed.tone : undefined,
+      keyTopics: Array.isArray(parsed.keyTopics) ? parsed.keyTopics.filter(isString) : undefined,
+      qualityNotes: Array.isArray(parsed.qualityNotes)
+        ? parsed.qualityNotes.filter(isString)
+        : undefined
+    };
+  } catch {
+    return {
+      contentType: undefined,
+      tone: undefined,
+      keyTopics: [],
+      qualityNotes: []
     };
   }
 }
