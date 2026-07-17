@@ -4,7 +4,11 @@ import type {
   SummaryRequest,
   SummaryResult,
   AskPageRequest,
-  AskPageResult
+  AskPageResult,
+  RewriteRequest,
+  RewriteResult,
+  AnalysisRequest,
+  AnalysisResult
 } from './types';
 
 const MISSING_API_KEY_MESSAGE =
@@ -32,6 +36,28 @@ export async function askPage(
   }
 
   return getProvider().askPage(request);
+}
+
+export async function rewriteSelection(
+  request: RewriteRequest
+): Promise<RewriteResult> {
+  if (!request.text.trim()) {
+    throw new Error('No text was selected to rewrite.');
+  }
+
+  return getProvider().rewriteSelection(request);
+}
+
+export async function analyzePage(
+  request: AnalysisRequest
+): Promise<AnalysisResult> {
+  if (!request.content.trim()) {
+    throw new Error(
+      'Project Orbit could not find readable visible content on this page.'
+    );
+  }
+
+  return getProvider().analyzePage(request);
 }
 
 function getProvider(): AiProvider {
