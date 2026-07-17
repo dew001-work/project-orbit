@@ -1,5 +1,5 @@
 import { MessageSquareText, PenLine, Settings, Sparkles } from 'lucide-react';
-import { useState } from 'react';
+import { useState, type ChangeEvent } from 'react';
 import { ActionButton } from '../components/ActionButton';
 import { PageCard } from '../components/PageCard';
 import { StatusMessage } from '../components/StatusMessage';
@@ -108,7 +108,7 @@ setMessage(action.message);
 
     <textarea
       value={question}
-      onChange={(e) => setQuestion(e.target.value)}
+      onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setQuestion(e.target.value)}
       placeholder="Example: What are the key points of this article?"
       className="mt-3 w-full rounded-lg border border-slate-300 p-3 text-sm"
       rows={4}
